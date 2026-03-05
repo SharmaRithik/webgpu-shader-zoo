@@ -1,0 +1,201 @@
+//----------------------------------------
+// Function: main_kernel
+//----------------------------------------
+enable f16;
+
+@group(0) @binding(0) var<storage, read> A : array<f16>;
+@group(0) @binding(1) var<storage, read> B : array<f16>;
+@group(0) @binding(2) var<storage, read_write> C : array<f16>;
+
+struct PODArgs {
+  packGridDimX: u32
+}
+@group(0) @binding(3) var<uniform> podArgs : PODArgs;
+
+var<workgroup> A_reindex_shared : array<f16, 256>;
+var<workgroup> B_reindex_shared : array<f16, 256>;
+@compute @workgroup_size(8, 8, 1)
+fn main_kernel(
+  @builtin(workgroup_id) blockIdx : vec3<u32>,
+  @builtin(num_workgroups) gridDim : vec3<u32>,
+  @builtin(local_invocation_id) threadIdx : vec3<u32>
+) {
+  if (blockIdx.z * gridDim.x + blockIdx.x > podArgs.packGridDimX) { return; }
+  var C_reindex_local : array<f16, 16>;
+  let v__1 : i32 = i32(blockIdx.z * gridDim.x + blockIdx.x);
+  for (var var_1 : i32 = 0i; var_1 < 1i; var_1++) {
+    C_reindex_local[0i] = 0.000000e+00h;
+    C_reindex_local[1i] = 0.000000e+00h;
+    C_reindex_local[2i] = 0.000000e+00h;
+    C_reindex_local[3i] = 0.000000e+00h;
+    C_reindex_local[4i] = 0.000000e+00h;
+    C_reindex_local[5i] = 0.000000e+00h;
+    C_reindex_local[6i] = 0.000000e+00h;
+    C_reindex_local[7i] = 0.000000e+00h;
+    C_reindex_local[8i] = 0.000000e+00h;
+    C_reindex_local[9i] = 0.000000e+00h;
+    C_reindex_local[10i] = 0.000000e+00h;
+    C_reindex_local[11i] = 0.000000e+00h;
+    C_reindex_local[12i] = 0.000000e+00h;
+    C_reindex_local[13i] = 0.000000e+00h;
+    C_reindex_local[14i] = 0.000000e+00h;
+    C_reindex_local[15i] = 0.000000e+00h;
+    for (var ax3_0 : i32 = 0i; ax3_0 < 128i; ax3_0++) {
+      workgroupBarrier();
+      A_reindex_shared[((i32(threadIdx.y) * 32i) + (i32(threadIdx.x) * 4i))] = A[(((((v__1 * 32768i) + (i32(threadIdx.y) * 4096i)) + ((i32(threadIdx.x)>>1u) * 1024i)) + (ax3_0 * 8i)) + ((i32(threadIdx.x) & 1i) * 4i))];
+      A_reindex_shared[(((i32(threadIdx.y) * 32i) + (i32(threadIdx.x) * 4i)) + 1i)] = A[((((((v__1 * 32768i) + (i32(threadIdx.y) * 4096i)) + ((i32(threadIdx.x)>>1u) * 1024i)) + (ax3_0 * 8i)) + ((i32(threadIdx.x) & 1i) * 4i)) + 1i)];
+      A_reindex_shared[(((i32(threadIdx.y) * 32i) + (i32(threadIdx.x) * 4i)) + 2i)] = A[((((((v__1 * 32768i) + (i32(threadIdx.y) * 4096i)) + ((i32(threadIdx.x)>>1u) * 1024i)) + (ax3_0 * 8i)) + ((i32(threadIdx.x) & 1i) * 4i)) + 2i)];
+      A_reindex_shared[(((i32(threadIdx.y) * 32i) + (i32(threadIdx.x) * 4i)) + 3i)] = A[((((((v__1 * 32768i) + (i32(threadIdx.y) * 4096i)) + ((i32(threadIdx.x)>>1u) * 1024i)) + (ax3_0 * 8i)) + ((i32(threadIdx.x) & 1i) * 4i)) + 3i)];
+      B_reindex_shared[((i32(threadIdx.y) * 32i) + (i32(threadIdx.x) * 4i))] = B[(((((ax3_0 * 8192i) + ((i32(threadIdx.x) & 1i) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + (i32(threadIdx.x)>>1u))];
+      B_reindex_shared[(((i32(threadIdx.y) * 32i) + (i32(threadIdx.x) * 4i)) + 1i)] = B[((((((ax3_0 * 8192i) + ((i32(threadIdx.x) & 1i) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + (i32(threadIdx.x)>>1u)) + 1024i)];
+      B_reindex_shared[(((i32(threadIdx.y) * 32i) + (i32(threadIdx.x) * 4i)) + 2i)] = B[((((((ax3_0 * 8192i) + ((i32(threadIdx.x) & 1i) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + (i32(threadIdx.x)>>1u)) + 2048i)];
+      B_reindex_shared[(((i32(threadIdx.y) * 32i) + (i32(threadIdx.x) * 4i)) + 3i)] = B[((((((ax3_0 * 8192i) + ((i32(threadIdx.x) & 1i) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + (i32(threadIdx.x)>>1u)) + 3072i)];
+      workgroupBarrier();
+      C_reindex_local[0i] = fma(A_reindex_shared[(i32(threadIdx.x) * 32i)], B_reindex_shared[(i32(threadIdx.y) * 32i)], C_reindex_local[0i]);
+      C_reindex_local[1i] = fma(A_reindex_shared[(i32(threadIdx.x) * 32i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 8i)], C_reindex_local[1i]);
+      C_reindex_local[2i] = fma(A_reindex_shared[(i32(threadIdx.x) * 32i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 16i)], C_reindex_local[2i]);
+      C_reindex_local[3i] = fma(A_reindex_shared[(i32(threadIdx.x) * 32i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 24i)], C_reindex_local[3i]);
+      C_reindex_local[4i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 8i)], B_reindex_shared[(i32(threadIdx.y) * 32i)], C_reindex_local[4i]);
+      C_reindex_local[5i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 8i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 8i)], C_reindex_local[5i]);
+      C_reindex_local[6i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 8i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 16i)], C_reindex_local[6i]);
+      C_reindex_local[7i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 8i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 24i)], C_reindex_local[7i]);
+      C_reindex_local[8i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 16i)], B_reindex_shared[(i32(threadIdx.y) * 32i)], C_reindex_local[8i]);
+      C_reindex_local[9i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 16i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 8i)], C_reindex_local[9i]);
+      C_reindex_local[10i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 16i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 16i)], C_reindex_local[10i]);
+      C_reindex_local[11i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 16i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 24i)], C_reindex_local[11i]);
+      C_reindex_local[12i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 24i)], B_reindex_shared[(i32(threadIdx.y) * 32i)], C_reindex_local[12i]);
+      C_reindex_local[13i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 24i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 8i)], C_reindex_local[13i]);
+      C_reindex_local[14i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 24i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 16i)], C_reindex_local[14i]);
+      C_reindex_local[15i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 24i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 24i)], C_reindex_local[15i]);
+      C_reindex_local[0i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 1i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 1i)], C_reindex_local[0i]);
+      C_reindex_local[1i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 1i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 9i)], C_reindex_local[1i]);
+      C_reindex_local[2i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 1i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 17i)], C_reindex_local[2i]);
+      C_reindex_local[3i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 1i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 25i)], C_reindex_local[3i]);
+      C_reindex_local[4i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 9i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 1i)], C_reindex_local[4i]);
+      C_reindex_local[5i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 9i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 9i)], C_reindex_local[5i]);
+      C_reindex_local[6i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 9i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 17i)], C_reindex_local[6i]);
+      C_reindex_local[7i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 9i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 25i)], C_reindex_local[7i]);
+      C_reindex_local[8i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 17i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 1i)], C_reindex_local[8i]);
+      C_reindex_local[9i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 17i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 9i)], C_reindex_local[9i]);
+      C_reindex_local[10i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 17i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 17i)], C_reindex_local[10i]);
+      C_reindex_local[11i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 17i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 25i)], C_reindex_local[11i]);
+      C_reindex_local[12i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 25i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 1i)], C_reindex_local[12i]);
+      C_reindex_local[13i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 25i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 9i)], C_reindex_local[13i]);
+      C_reindex_local[14i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 25i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 17i)], C_reindex_local[14i]);
+      C_reindex_local[15i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 25i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 25i)], C_reindex_local[15i]);
+      C_reindex_local[0i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 2i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 2i)], C_reindex_local[0i]);
+      C_reindex_local[1i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 2i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 10i)], C_reindex_local[1i]);
+      C_reindex_local[2i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 2i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 18i)], C_reindex_local[2i]);
+      C_reindex_local[3i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 2i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 26i)], C_reindex_local[3i]);
+      C_reindex_local[4i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 10i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 2i)], C_reindex_local[4i]);
+      C_reindex_local[5i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 10i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 10i)], C_reindex_local[5i]);
+      C_reindex_local[6i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 10i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 18i)], C_reindex_local[6i]);
+      C_reindex_local[7i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 10i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 26i)], C_reindex_local[7i]);
+      C_reindex_local[8i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 18i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 2i)], C_reindex_local[8i]);
+      C_reindex_local[9i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 18i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 10i)], C_reindex_local[9i]);
+      C_reindex_local[10i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 18i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 18i)], C_reindex_local[10i]);
+      C_reindex_local[11i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 18i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 26i)], C_reindex_local[11i]);
+      C_reindex_local[12i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 26i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 2i)], C_reindex_local[12i]);
+      C_reindex_local[13i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 26i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 10i)], C_reindex_local[13i]);
+      C_reindex_local[14i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 26i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 18i)], C_reindex_local[14i]);
+      C_reindex_local[15i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 26i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 26i)], C_reindex_local[15i]);
+      C_reindex_local[0i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 3i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 3i)], C_reindex_local[0i]);
+      C_reindex_local[1i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 3i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 11i)], C_reindex_local[1i]);
+      C_reindex_local[2i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 3i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 19i)], C_reindex_local[2i]);
+      C_reindex_local[3i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 3i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 27i)], C_reindex_local[3i]);
+      C_reindex_local[4i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 11i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 3i)], C_reindex_local[4i]);
+      C_reindex_local[5i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 11i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 11i)], C_reindex_local[5i]);
+      C_reindex_local[6i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 11i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 19i)], C_reindex_local[6i]);
+      C_reindex_local[7i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 11i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 27i)], C_reindex_local[7i]);
+      C_reindex_local[8i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 19i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 3i)], C_reindex_local[8i]);
+      C_reindex_local[9i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 19i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 11i)], C_reindex_local[9i]);
+      C_reindex_local[10i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 19i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 19i)], C_reindex_local[10i]);
+      C_reindex_local[11i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 19i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 27i)], C_reindex_local[11i]);
+      C_reindex_local[12i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 27i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 3i)], C_reindex_local[12i]);
+      C_reindex_local[13i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 27i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 11i)], C_reindex_local[13i]);
+      C_reindex_local[14i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 27i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 19i)], C_reindex_local[14i]);
+      C_reindex_local[15i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 27i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 27i)], C_reindex_local[15i]);
+      C_reindex_local[0i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 4i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 4i)], C_reindex_local[0i]);
+      C_reindex_local[1i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 4i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 12i)], C_reindex_local[1i]);
+      C_reindex_local[2i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 4i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 20i)], C_reindex_local[2i]);
+      C_reindex_local[3i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 4i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 28i)], C_reindex_local[3i]);
+      C_reindex_local[4i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 12i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 4i)], C_reindex_local[4i]);
+      C_reindex_local[5i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 12i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 12i)], C_reindex_local[5i]);
+      C_reindex_local[6i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 12i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 20i)], C_reindex_local[6i]);
+      C_reindex_local[7i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 12i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 28i)], C_reindex_local[7i]);
+      C_reindex_local[8i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 20i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 4i)], C_reindex_local[8i]);
+      C_reindex_local[9i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 20i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 12i)], C_reindex_local[9i]);
+      C_reindex_local[10i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 20i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 20i)], C_reindex_local[10i]);
+      C_reindex_local[11i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 20i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 28i)], C_reindex_local[11i]);
+      C_reindex_local[12i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 28i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 4i)], C_reindex_local[12i]);
+      C_reindex_local[13i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 28i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 12i)], C_reindex_local[13i]);
+      C_reindex_local[14i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 28i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 20i)], C_reindex_local[14i]);
+      C_reindex_local[15i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 28i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 28i)], C_reindex_local[15i]);
+      C_reindex_local[0i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 5i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 5i)], C_reindex_local[0i]);
+      C_reindex_local[1i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 5i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 13i)], C_reindex_local[1i]);
+      C_reindex_local[2i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 5i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 21i)], C_reindex_local[2i]);
+      C_reindex_local[3i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 5i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 29i)], C_reindex_local[3i]);
+      C_reindex_local[4i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 13i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 5i)], C_reindex_local[4i]);
+      C_reindex_local[5i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 13i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 13i)], C_reindex_local[5i]);
+      C_reindex_local[6i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 13i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 21i)], C_reindex_local[6i]);
+      C_reindex_local[7i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 13i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 29i)], C_reindex_local[7i]);
+      C_reindex_local[8i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 21i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 5i)], C_reindex_local[8i]);
+      C_reindex_local[9i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 21i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 13i)], C_reindex_local[9i]);
+      C_reindex_local[10i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 21i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 21i)], C_reindex_local[10i]);
+      C_reindex_local[11i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 21i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 29i)], C_reindex_local[11i]);
+      C_reindex_local[12i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 29i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 5i)], C_reindex_local[12i]);
+      C_reindex_local[13i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 29i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 13i)], C_reindex_local[13i]);
+      C_reindex_local[14i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 29i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 21i)], C_reindex_local[14i]);
+      C_reindex_local[15i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 29i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 29i)], C_reindex_local[15i]);
+      C_reindex_local[0i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 6i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 6i)], C_reindex_local[0i]);
+      C_reindex_local[1i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 6i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 14i)], C_reindex_local[1i]);
+      C_reindex_local[2i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 6i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 22i)], C_reindex_local[2i]);
+      C_reindex_local[3i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 6i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 30i)], C_reindex_local[3i]);
+      C_reindex_local[4i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 14i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 6i)], C_reindex_local[4i]);
+      C_reindex_local[5i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 14i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 14i)], C_reindex_local[5i]);
+      C_reindex_local[6i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 14i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 22i)], C_reindex_local[6i]);
+      C_reindex_local[7i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 14i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 30i)], C_reindex_local[7i]);
+      C_reindex_local[8i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 22i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 6i)], C_reindex_local[8i]);
+      C_reindex_local[9i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 22i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 14i)], C_reindex_local[9i]);
+      C_reindex_local[10i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 22i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 22i)], C_reindex_local[10i]);
+      C_reindex_local[11i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 22i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 30i)], C_reindex_local[11i]);
+      C_reindex_local[12i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 30i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 6i)], C_reindex_local[12i]);
+      C_reindex_local[13i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 30i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 14i)], C_reindex_local[13i]);
+      C_reindex_local[14i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 30i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 22i)], C_reindex_local[14i]);
+      C_reindex_local[15i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 30i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 30i)], C_reindex_local[15i]);
+      C_reindex_local[0i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 7i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 7i)], C_reindex_local[0i]);
+      C_reindex_local[1i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 7i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 15i)], C_reindex_local[1i]);
+      C_reindex_local[2i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 7i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 23i)], C_reindex_local[2i]);
+      C_reindex_local[3i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 7i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 31i)], C_reindex_local[3i]);
+      C_reindex_local[4i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 15i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 7i)], C_reindex_local[4i]);
+      C_reindex_local[5i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 15i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 15i)], C_reindex_local[5i]);
+      C_reindex_local[6i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 15i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 23i)], C_reindex_local[6i]);
+      C_reindex_local[7i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 15i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 31i)], C_reindex_local[7i]);
+      C_reindex_local[8i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 23i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 7i)], C_reindex_local[8i]);
+      C_reindex_local[9i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 23i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 15i)], C_reindex_local[9i]);
+      C_reindex_local[10i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 23i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 23i)], C_reindex_local[10i]);
+      C_reindex_local[11i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 23i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 31i)], C_reindex_local[11i]);
+      C_reindex_local[12i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 31i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 7i)], C_reindex_local[12i]);
+      C_reindex_local[13i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 31i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 15i)], C_reindex_local[13i]);
+      C_reindex_local[14i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 31i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 23i)], C_reindex_local[14i]);
+      C_reindex_local[15i] = fma(A_reindex_shared[((i32(threadIdx.x) * 32i) + 31i)], B_reindex_shared[((i32(threadIdx.y) * 32i) + 31i)], C_reindex_local[15i]);
+    }
+    C[((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i))] = C_reindex_local[0i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 1i)] = C_reindex_local[1i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 2i)] = C_reindex_local[2i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 3i)] = C_reindex_local[3i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 1024i)] = C_reindex_local[4i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 1025i)] = C_reindex_local[5i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 1026i)] = C_reindex_local[6i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 1027i)] = C_reindex_local[7i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 2048i)] = C_reindex_local[8i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 2049i)] = C_reindex_local[9i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 2050i)] = C_reindex_local[10i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 2051i)] = C_reindex_local[11i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 3072i)] = C_reindex_local[12i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 3073i)] = C_reindex_local[13i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 3074i)] = C_reindex_local[14i];
+    C[(((((v__1 * 32768i) + (i32(threadIdx.x) * 4096i)) + (i32(blockIdx.y) * 32i)) + (i32(threadIdx.y) * 4i)) + 3075i)] = C_reindex_local[15i];
+  }
+}
+
