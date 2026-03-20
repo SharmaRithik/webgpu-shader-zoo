@@ -21,6 +21,7 @@ fn main_kernel(
   let v__1 : i32 = i32(blockIdx.z * gridDim.x + blockIdx.x);
   var C_rf_local : array<f32, 1>;
   C_rf_local[0i] = 0.000000e+00f;
+  let cse_v1 : i32 = ((v__1 * 1024i) + i32(threadIdx.x));
   C_rf_local[0i] = fma(A[((v__1 * 1024i) + i32(threadIdx.x))], b[i32(threadIdx.x)], C_rf_local[0i]);
   C_rf_local[0i] = fma(A[(((v__1 * 1024i) + i32(threadIdx.x)) + 64i)], b[(i32(threadIdx.x) + 64i)], C_rf_local[0i]);
   C_rf_local[0i] = fma(A[(((v__1 * 1024i) + i32(threadIdx.x)) + 128i)], b[(i32(threadIdx.x) + 128i)], C_rf_local[0i]);
