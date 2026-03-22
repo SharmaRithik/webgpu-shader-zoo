@@ -1,5 +1,5 @@
 // Shader: MatMul
-// Generated for: matmul
+// MatMul: M=4096, K=1024, N=2048
 
 enable subgroups;
 const workgroup_size_x: u32 = 8;
