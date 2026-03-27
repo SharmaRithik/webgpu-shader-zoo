@@ -1,5 +1,5 @@
 // Program: MatMul
-// Dispatch: (32, 1, 1)
+// Dispatch: (256, 1, 1)
 
 enable f16;
 enable subgroups;

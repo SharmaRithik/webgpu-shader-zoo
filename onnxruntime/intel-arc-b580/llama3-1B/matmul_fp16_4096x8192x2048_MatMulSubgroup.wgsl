@@ -1,5 +1,5 @@
 // Program: MatMulSubgroup
-// Dispatch: (8, 1, 1)
+// Dispatch: (64, 64, 1)
 
 enable f16;
 enable subgroups;
@@ -96,9 +96,10 @@ fn main(@builtin(global_invocation_id) global_id : vec3<u32>,
         @builtin(local_invocation_index) local_idx : u32,
         @builtin(local_invocation_id) local_id : vec3<u32>,
         @builtin(subgroup_invocation_id) sg_id : u32,
-        @builtin(subgroup_size) sg_size : u32) {
-  let global_idx = global_id.x;
-  let workgroup_idx = workgroup_id.x;
+        @builtin(subgroup_size) sg_size : u32,
+        @builtin(num_workgroups) num_workgroups : vec3<u32>) {
+  let workgroup_idx = workgroup_id.z * num_workgroups[0] * num_workgroups[1] + workgroup_id.y * num_workgroups[0] + workgroup_id.x;
+  let global_idx = workgroup_idx * (workgroup_size_x * workgroup_size_y * workgroup_size_z) + local_idx;
   let workgroupIdXStride = (uniforms.dim_b_outer - 1) / 128 + 1;
   let workgroupIdYStride = (uniforms.dim_a_outer - 1) / 64 + 1;
   let batch = i32(workgroup_idx / (workgroupIdXStride * workgroupIdYStride));

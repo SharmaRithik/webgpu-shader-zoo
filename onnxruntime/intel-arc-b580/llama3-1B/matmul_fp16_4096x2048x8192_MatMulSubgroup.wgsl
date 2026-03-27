@@ -1,5 +1,5 @@
 // Program: MatMulSubgroup
-// Dispatch: (8, 16, 1)
+// Dispatch: (16, 64, 1)
 
 enable f16;
 enable subgroups;
